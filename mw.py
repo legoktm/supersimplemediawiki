@@ -61,12 +61,20 @@ class Wiki:
         self.cookies = r2.cookies
 
     def request(self, params, post=False):
+        """
+        Makes an API request with the given params.
+        """
         params['format'] = 'json' #force json
-        if post:
-            r = requests.post(self.api, params=params, cookies=self.cookies, headers=self.headers)
-        else:
-            r = requests.get(self.api, params=params, cookies=self.cookies, headers=self.headers)
-        if not r.ok:
+        r = self.fetch(self.api, params, post=post)
+        if not r.json:
             raise SSMWError(r.text)
         return r.json
 
+    def fetch(self, url, params=None, post=False):
+        if post:
+            r = requests.post(url, params=params, cookies=self.cookies, headers=self.headers)
+        else:
+            r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers)
+        if not r.ok:
+            raise SSMWError(r.text)
+        return r

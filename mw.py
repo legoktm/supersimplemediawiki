@@ -53,7 +53,9 @@ class Wiki:
         r1 = requests.post(self.api, params=data, headers=self.headers)
         if not r1.ok:
             raise SSMWError(r1.text)
-        token = r1.json['login']['token']
+        if not r1.json():
+            raise SSMWError(r1.text)
+        token = r1.json()['login']['token']
         data['lgtoken'] = token
         r2 = requests.post(self.api, params=data, headers=self.headers, cookies=r1.cookies)
         if not r2.ok:
@@ -63,12 +65,13 @@ class Wiki:
     def request(self, params, post=False):
         """
         Makes an API request with the given params.
+        Returns the page in a dict format
         """
         params['format'] = 'json' #force json
         r = self.fetch(self.api, params, post=post)
-        if not r.json:
+        if not r.json():
             raise SSMWError(r.text)
-        return r.json
+        return r.json()
 
     def fetch(self, url, params=None, post=False):
         if post:

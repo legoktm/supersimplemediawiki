@@ -75,9 +75,7 @@ class Wiki:
 
     def fetch(self, url, params=None, post=False):
         if post:
-            headers = dict(self.headers)
-            headers['Content-type'] = 'application/x-www-form-urlencoded'
-            r = requests.post(url, params=params, cookies=self.cookies, headers=headers)
+            r = requests.post(url, params=params, cookies=self.cookies, headers=self.headers)
         else:
             r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers)
         if not r.ok:

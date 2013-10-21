@@ -29,7 +29,7 @@ class SSMWError(Exception):
 class Wiki:
     def __init__(self, api, headers=None):
         self.api = api
-        self.cookies = None
+        self.cookies = {}
         self.username = None
         if headers:
             self.headers = headers

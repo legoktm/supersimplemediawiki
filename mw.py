@@ -29,7 +29,7 @@ class SSMWError(Exception):
 class Wiki:
     def __init__(self, api, headers=None):
         self.api = api
-        self.cookies = None
+        self.cookies = {}
         self.username = None
         if headers:
             self.headers = headers
@@ -62,24 +62,23 @@ class Wiki:
             raise SSMWError(r2.text)
         self.cookies = r2.cookies
 
-    def request(self, params, post=False):
+    def request(self, params={}, post=False, files=None, data=None):
         """
         Makes an API request with the given params.
         Returns the page in a dict format
         """
         params['format'] = 'json' #force json
-        r = self.fetch(self.api, params, post=post)
+        r = self.fetch(self.api, params, post=post, files=files, data=data)
         if not r.json():
             raise SSMWError(r.text)
         return r.json()
 
-    def fetch(self, url, params=None, post=False):
+    def fetch(self, url, params=None, post=False, data=None, files=None):
         if post:
-            headers = dict(self.headers)
-            headers['Content-type'] = 'application/x-www-form-urlencoded'
-            r = requests.post(url, params=params, cookies=self.cookies, headers=headers)
+            r = requests.post(url, params=params, cookies=self.cookies, headers=self.headers, files=files, data=data)
         else:
-            r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers)
+            r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers, files=files, data=data)
         if not r.ok:
             raise SSMWError(r.text)
+        self.cookies.update(r.cookies)
         return r

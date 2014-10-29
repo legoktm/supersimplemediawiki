@@ -31,6 +31,7 @@ class Wiki:
         self.api = api
         self.cookies = None
         self.username = None
+        self.session = requests.Session()
         if headers:
             self.headers = headers
         else:
@@ -50,14 +51,17 @@ class Wiki:
                 'lgpassword':passw,
                 'format':'json'
         }
-        r1 = requests.post(self.api, params=data, headers=self.headers)
+        #r1 = requests.post(self.api, params=data, headers=self.headers)
+        r1 = self.session.post(self.api, data)
         if not r1.ok:
             raise SSMWError(r1.text)
         if not r1.json():
             raise SSMWError(r1.text)
+
         token = r1.json()['login']['token']
         data['lgtoken'] = token
-        r2 = requests.post(self.api, params=data, headers=self.headers, cookies=r1.cookies)
+        #r2 = requests.post(self.api, params=data, headers=self.headers, cookies=r1.cookies)
+        r2 = self.session.post(self.api, data)
         if not r2.ok:
             raise SSMWError(r2.text)
         self.cookies = r2.cookies
@@ -67,17 +71,21 @@ class Wiki:
         Makes an API request with the given params.
         Returns the page in a dict format
         """
-        params['format'] = 'json' #force json
+        params['format'] = 'json'  # force json
         r = self.fetch(self.api, params, post=post)
-        if not r.json():
+        try:
+            j = r.json()
+        except ValueError:
             raise SSMWError(r.text)
-        return r.json()
+        return j
 
     def fetch(self, url, params=None, post=False):
         if post:
-            r = requests.post(url, params=params, cookies=self.cookies, headers=self.headers)
+            #r = requests.post(url, params=params, cookies=self.cookies, headers=self.headers)
+            r = self.session.post(url, params=params)
         else:
-            r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers)
+            #r = requests.get(url, params=params, cookies=self.cookies, headers=self.headers)
+            r = self.session.get(url, params=params)
         if not r.ok:
             raise SSMWError(r.text)
         return r
